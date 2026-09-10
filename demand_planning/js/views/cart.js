@@ -119,25 +119,37 @@
                 { label: 'Create RFX', cls: 'btn-green', onClick: (o) => {
                     const btns = o.querySelectorAll('.modal-foot .btn');
                     btns.forEach(b => b.disabled = true);
+                    const payload = handoffPayload(rows);
+                    // same-tab navigation: if the user came from the Sourcing RFX
+                    // form ("Select from Material Master"), their draft is restored
+                    // there with these items appended
+                    const finish = (id) => {
+                        o.remove();
+                        window.Store.set(s => { s.cart = []; });
+                        window.UI.renderHeader();
+                        window.location.href = SOURCING_URL + '/#/rfx/new?type=material&handoff=' + encodeURIComponent(id);
+                    };
                     fetch(SOURCING_URL + '/api/handoff', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(handoffPayload(rows))
+                        body: JSON.stringify(payload)
                     })
                         .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
                         .then(res => {
                             if (!res || !res.id) throw new Error('bad response');
-                            o.remove();
-                            window.Store.set(s => { s.cart = []; });
-                            window.UI.renderHeader();
-                            // same-tab navigation: if the user came from the Sourcing RFX
-                            // form ("Select from Material Master"), their draft is restored
-                            // there with these items appended
-                            window.location.href = SOURCING_URL + '/#/rfx/new?type=material&handoff=' + encodeURIComponent(res.id);
+                            finish(res.id);
                         })
                         .catch(() => {
-                            btns.forEach(b => b.disabled = false);
-                            window.UI.toast({ kind: 'error', title: 'Migration failed',
-                                body: 'Could not reach the Sourcing module. Is its server running on ' + SOURCING_URL.replace(/^https?:\/\//, '') + '?' });
+                            // static host (GitHub Pages): both modules share one origin,
+                            // so the cart travels via localStorage instead of the server
+                            try {
+                                const id = 'h' + Date.now();
+                                localStorage.setItem('dmp_handoff_' + id, JSON.stringify(payload));
+                                finish(id);
+                            } catch (e) {
+                                btns.forEach(b => b.disabled = false);
+                                window.UI.toast({ kind: 'error', title: 'Migration failed',
+                                    body: 'Could not hand the cart over to the Sourcing module.' });
+                            }
                         });
                 } }
             ]

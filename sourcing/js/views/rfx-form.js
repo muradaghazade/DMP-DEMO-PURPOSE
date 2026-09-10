@@ -106,7 +106,15 @@
     function pullHandoff(id) {
         fetch('/api/handoff/' + encodeURIComponent(id))
             .then(r => (r.ok ? r.json() : null))
+            .catch(() => null)
             .then(payload => {
+                // static host: the cart travels via shared-origin localStorage instead
+                if (!payload) {
+                    try {
+                        const raw = localStorage.getItem('dmp_handoff_' + id);
+                        if (raw) { payload = JSON.parse(raw); localStorage.removeItem('dmp_handoff_' + id); }
+                    } catch (e) { /* ignore */ }
+                }
                 if (!payload || !Array.isArray(payload.items) || !payload.items.length) {
                     U().toast({ kind: 'error', title: 'Migration failed', body: 'The Demand Planning cart could not be loaded.' });
                     return;

@@ -3,6 +3,10 @@
    ============================================================ */
 (function () {
 
+    // module cross-links: absolute localhost ports when running under the dev
+    // python servers, relative sibling folders on a static host (GitHub Pages)
+    window.DP_URL = window.DP_URL || (location.port === '8124' ? 'http://127.0.0.1:8123' : '../demand_planning');
+
     /* ---------- tiny utils ---------- */
     function esc(s) {
         if (s === null || s === undefined) return '';

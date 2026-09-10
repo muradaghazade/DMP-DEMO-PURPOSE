@@ -3,6 +3,10 @@
    ============================================================ */
 (function () {
 
+    // Sourcing module cross-link: absolute localhost port when running under the
+    // dev python servers, relative sibling folder on a static host (GitHub Pages)
+    window.SOURCING_URL = window.SOURCING_URL || (location.port === '8123' ? 'http://127.0.0.1:8124' : '../sourcing');
+
     /* ---------- tiny utils ---------- */
     function esc(s) {
         if (s === null || s === undefined) return '';

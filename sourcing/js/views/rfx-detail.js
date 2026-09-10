@@ -318,17 +318,31 @@
             });
             return { name: sup.name, supplierId: sid, rows };
         });
+        const payload = { source: 'sourcing_bid_eval', rfxId: rfx.id, rfxNo: rfx.no, title: rfx.title, createdByName: window.Store.currentUser().name, vendors };
+        const finish = (id) => {
+            window.open('bid-eval.html?handoff=' + encodeURIComponent(id), '_blank');
+            ui.toast({ title: 'Bid evaluation opened', body: subs.length + ' supplier offer(s) sent to the evaluation tool.' });
+        };
         fetch('/api/handoff', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ source: 'sourcing_bid_eval', rfxId: rfx.id, rfxNo: rfx.no, title: rfx.title, createdByName: window.Store.currentUser().name, vendors })
+            body: JSON.stringify(payload)
         })
             .then(r => (r.ok ? r.json() : null))
             .then(res => {
                 if (!res || !res.id) throw new Error('bad response');
-                window.open('bid-eval.html?handoff=' + encodeURIComponent(res.id), '_blank');
-                ui.toast({ title: 'Bid evaluation opened', body: subs.length + ' supplier offer(s) sent to the evaluation tool.' });
+                finish(res.id);
             })
-            .catch(() => ui.toast({ kind: 'error', title: 'Bid evaluation failed', body: 'Could not push the offers to the tool.' }));
+            .catch(() => {
+                // static host (GitHub Pages): the tool shares this origin — hand the
+                // offers over via localStorage instead of the server
+                try {
+                    const id = 'h' + Date.now();
+                    localStorage.setItem('dmp_handoff_' + id, JSON.stringify(payload));
+                    finish(id);
+                } catch (e) {
+                    ui.toast({ kind: 'error', title: 'Bid evaluation failed', body: 'Could not push the offers to the tool.' });
+                }
+            });
     }
 
     /* ---------- bid-evaluation export (legacy CSV fallback) ---------- */

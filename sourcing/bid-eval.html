@@ -7900,7 +7900,10 @@ function aiAnswer(q){
   }
   function boot(){
     if(typeof XLSX==='undefined'||typeof stageFiles!=='function'){ setTimeout(boot,150); return; }
-    fetch('/api/handoff/'+m[1]).then(function(r){ return r.ok?r.json():null; }).then(function(p){
+    fetch('/api/handoff/'+m[1]).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; }).then(function(p){
+      // static host (GitHub Pages): the Sourcing page hands the offers over via
+      // shared-origin localStorage instead of the server endpoint
+      if(!p){ try{ var raw=localStorage.getItem('dmp_handoff_'+m[1]); if(raw){ p=JSON.parse(raw); localStorage.removeItem('dmp_handoff_'+m[1]); } }catch(e){} }
       if(!p||!p.vendors||!p.vendors.length) return;
       window.__SRC_PAYLOAD=p;      // powers the sourcing negotiation buttons below
       initNegButtons();

@@ -45,6 +45,10 @@
         fetch('/api/state', { cache: 'no-store' })
             .then(r => (r.status === 200 ? r.json() : null))
             .catch(() => null)
+            // static hosts (e.g. GitHub Pages) have no /api — fall back to the
+            // bundled data/state.json as a read-only demo snapshot
+            .then(remote => remote || fetch('data/state.json', { cache: 'no-store' })
+                .then(r => (r.status === 200 ? r.json() : null)).catch(() => null))
             .then(remote => {
                 let changed = false;
                 if (remote && remote.__seeded) {

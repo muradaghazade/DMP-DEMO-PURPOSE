@@ -104,6 +104,19 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split("?")[0]
+        # the shared platform landing page (one file for dev and the static build)
+        if path == "/main":
+            try:
+                with open(os.path.join(os.path.dirname(ROOT), "landing.html"), "rb") as f:
+                    body = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+            except Exception:
+                pass
         if path.startswith("/api/ai/jobs/"):
             job_id = path[len("/api/ai/jobs/"):]
             if not _JOB_ID.match(job_id):

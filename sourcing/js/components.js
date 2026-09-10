@@ -219,9 +219,9 @@
             </div>`;
 
         bindActions(header, {
-            // the dmp logo leads to the platform landing page (static/Pages build);
-            // under the dev server there is no landing, so it stays the module home
-            'home': () => { if (location.port === '8124') go('#/rfx'); else window.location.href = '../'; },
+            // the dmp logo leads to the platform landing page — /main under the dev
+            // server, the parent folder on the static/Pages build
+            'home': () => { window.location.href = location.port === '8124' ? '/main' : '../'; },
             'nav-drawer': () => openNavDrawer(),
             'user-toggle': () => document.getElementById('role-menu').classList.toggle('open'),
             'user-pick': (t) => {

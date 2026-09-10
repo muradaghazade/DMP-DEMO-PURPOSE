@@ -274,7 +274,9 @@
             </div>`;
 
         bindActions(header, {
-            'home': () => go('#/master'),
+            // the dmp logo leads to the platform landing page (static/Pages build);
+            // under the dev server there is no landing, so it stays the module home
+            'home': () => { if (location.port === '8123') go('#/master'); else window.location.href = '../'; },
             'inbox': () => go('#/inbox'),
             'cart': () => go('#/cart'),
             'nav-drawer': () => openNavDrawer(),

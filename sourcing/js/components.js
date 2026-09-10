@@ -219,7 +219,9 @@
             </div>`;
 
         bindActions(header, {
-            'home': () => go('#/rfx'),
+            // the dmp logo leads to the platform landing page (static/Pages build);
+            // under the dev server there is no landing, so it stays the module home
+            'home': () => { if (location.port === '8124') go('#/rfx'); else window.location.href = '../'; },
             'nav-drawer': () => openNavDrawer(),
             'user-toggle': () => document.getElementById('role-menu').classList.toggle('open'),
             'user-pick': (t) => {
